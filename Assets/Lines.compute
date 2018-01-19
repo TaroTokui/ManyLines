@@ -1,0 +1,93 @@
+﻿#pragma kernel Init
+#pragma kernel Update
+#pragma kernel Emit
+
+#include "Common.cginc"
+
+// スレッドグループのスレッドサイズ
+#define kThreadCount 256
+
+struct LineData
+{
+	bool Active;
+	float3 BasePosition;
+	float3 Position;
+	float3 Velocity;
+	float3 Normal;
+	float3 Tangent;
+	float3 Color;
+	float Length;
+	float Time;
+	float LifeTime;
+};
+
+RWStructuredBuffer<LineData> LineDataBuffer;
+
+uint InstanceCount;
+uint MeshVertices;
+float time;	// _Time is already defined at UnityUI.cginc?
+float lifeTime;
+
+float3 rotate_position(float3 position, float3 axis, float angle)
+{
+	float4 q = quat_from_axis_angle(axis, angle);
+	float3 v = position.xyz;
+	return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
+}
+
+[numthreads(kThreadCount, 1, 1)]
+void Init(uint id : SV_DispatchThreadID)
+{
+	for (uint i = 0; i < MeshVertices; i++)
+	{
+		uint offs = id * InstanceCount + i;
+		LineDataBuffer[offs].Active = false;
+		LineDataBuffer[offs].BasePosition = float3(0, 0, 0);
+		LineDataBuffer[offs].Position = float3(0, 0, 0);
+		LineDataBuffer[offs].Velocity = float3(0, 0, 0);
+		LineDataBuffer[offs].Normal = float3(0, 1, 0);
+		LineDataBuffer[offs].Tangent = float3(1, 0, 0);
+		LineDataBuffer[offs].Color = float3(1, 1, 1);
+		LineDataBuffer[offs].Length = 0;
+		LineDataBuffer[offs].Time = 0;
+		LineDataBuffer[offs].LifeTime = 0;
+	}
+}
+
+[numthreads(kThreadCount, 1, 1)]
+void Update(uint id : SV_DispatchThreadID)
+{
+	// top vertex
+	uint offs = id * InstanceCount;
+	LineDataBuffer[offs].Active = true;
+	LineDataBuffer[offs].BasePosition = float3(0, 0, 0);
+	LineDataBuffer[offs].Position = float3(0, 0, 0);
+	LineDataBuffer[offs].Velocity = float3(0, 1, 0);
+	LineDataBuffer[offs].Normal = float3(0, 1, 0);
+	LineDataBuffer[offs].Tangent = float3(1, 0, 0);
+	LineDataBuffer[offs].Color = float3(1, 1, 1);
+	LineDataBuffer[offs].Length = 0;
+	LineDataBuffer[offs].Time = 0;
+	LineDataBuffer[offs].LifeTime = lifeTime;
+
+	// other vertecies
+}
+
+[numthreads(kThreadCount, 1, 1)]
+void Emit(uint id : SV_DispatchThreadID)
+{
+	for (uint i = 0; i < MeshVertices; i++)
+	{
+		uint offs = id * InstanceCount + i;
+		LineDataBuffer[offs].Active = true;
+		LineDataBuffer[offs].BasePosition = float3(0, 0, 0);
+		LineDataBuffer[offs].Position = float3(0, 0, 0);
+		LineDataBuffer[offs].Velocity = float3(0, 1, 0);
+		LineDataBuffer[offs].Normal = float3(0, 1, 0);
+		LineDataBuffer[offs].Tangent = float3(1, 0, 0);
+		LineDataBuffer[offs].Color = float3(1, 1, 1);
+		LineDataBuffer[offs].Length = 0;
+		LineDataBuffer[offs].Time = 0;
+		LineDataBuffer[offs].LifeTime = lifeTime;
+	}
+}
