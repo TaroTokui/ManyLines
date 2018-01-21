@@ -6,11 +6,11 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: Lines
-  m_Shader: {fileID: 4800000, guid: 4ed11237e093ada47a60c59da6db5a51, type: 3}
+  m_Name: Test
+  m_Shader: {fileID: 4800000, guid: 41c53b867874d314fa19d7f1c4c1610f, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 1
+  m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}

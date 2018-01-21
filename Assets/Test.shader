@@ -1,4 +1,5 @@
-﻿Shader "Custom/Lines" {
+﻿Shader "Unlit/Test"
+{
 	Properties
 	{
 		_Color("Color", Color) = (1, 1, 1, 1)
@@ -15,21 +16,20 @@
 		#pragma surface surf Standard vertex:vert addshadow nolightmap
 		#pragma instancing_options procedural:setup
 		#pragma target 3.5
-
+		
 		struct LineData
 		{
 			int Active;
-			//float4 BasePosition;
-			//float4 Position;
-			//float4 Velocity;
-			//float4 Normal;
-			//float4 Tangent;
+			float4 BasePosition;
+			float4 Position;
+			float4 Velocity;
+			float4 Normal;
+			float4 Tangent;
 			float3 Albedo;
 			float Length;
 			float Time;
 			float LifeTime;
 		};
-
 
 		struct Input
 		{
@@ -53,15 +53,12 @@
 		half _Smoothness;
 		half _Metallic;
 
-		//float3 _MeshScale;
+		float3 _MeshScale;
 		uint _InstanceCount;
 		uint _MeshVertices;
 
 		#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
 		StructuredBuffer<LineData> _LineDataBuffer;
-        StructuredBuffer<float4> _PositionBuffer;
-        StructuredBuffer<float4> _TangentBuffer;
-        StructuredBuffer<float4> _NormalBuffer;
 		#endif
 
 		void vert(inout appdata v)
@@ -71,13 +68,12 @@
 			//uint idx = unity_InstanceID + v.vertex.x * _InstanceCount;
 			uint idx = unity_InstanceID + _MeshVertices + v.vertex.x;
 
-			//v.vertex = _LineDataBuffer[idx].Position;
-			//v.normal = _LineDataBuffer[idx].Normal;
-			//v.color = fixed4(_LineDataBuffer[idx].Albedo, 1);
-			
-			v.vertex = _PositionBuffer[idx];
-			v.normal = _NormalBuffer[idx];
-			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);
+			// スケールと位置(平行移動)を適用
+			float4x4 matrix_ = (float4x4)0;
+			matrix_._11_22_33_44 = float4(_MeshScale.xyz, 1.0);
+			matrix_._14_24_34 += _LineDataBuffer[idx].Position;
+			v.vertex = mul(matrix_, v.vertex);
+			v.color = fixed4(_LineDataBuffer[idx].Albedo, 1);
 
 			#endif
 		}

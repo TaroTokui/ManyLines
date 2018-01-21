@@ -12,13 +12,13 @@ public class Lines : MonoBehaviour
 
     struct LineData
     {
-        public bool Active;
-        public Vector3 BasePosition;
-        public Vector3 Position;
-        public Vector3 Velocity;
-        public Vector3 Normal;
-        public Vector3 Tangent;
-        public Vector3 Color;
+        public int Active;
+        //public Vector4 BasePosition;
+        //public Vector4 Position;
+        //public Vector4 Velocity;
+        //public Vector4 Normal;
+        //public Vector4 Tangent;
+        public Vector3 Albedo;
         public float Length;
         public float Time;
         public float LifeTime;
@@ -28,9 +28,12 @@ public class Lines : MonoBehaviour
 
     // --------------------------------------------------
     #region // Serialize Fields
-    
+
     [SerializeField]
     int _instanceCount = 100;
+
+    [SerializeField]
+    float _lifeTime = 5;
 
     [SerializeField]
     ComputeShader _computeShader;
@@ -55,6 +58,10 @@ public class Lines : MonoBehaviour
     #region // Private Fields
 
     ComputeBuffer _lineDataBuffer;
+    ComputeBuffer _positionBuffer;
+    ComputeBuffer _velocityBuffer;
+    ComputeBuffer _tangentBuffer;
+    ComputeBuffer _normalBuffer;
 
     /// GPU Instancingの為の引数
     uint[] _GPUInstancingArgs = new uint[5] { 0, 0, 0, 0, 0 };
@@ -70,8 +77,8 @@ public class Lines : MonoBehaviour
     #region Compute configurations
 
     const int kThreadCount = 256;
-    int ThreadGroupCount { get { return _instanceCount / kThreadCount; } }
-    int InstanceCount { get { return kThreadCount * ThreadGroupCount; } }
+    int ThreadGroupCount { get { return _instanceCount / kThreadCount + 1; } }
+    //int InstanceCount { get { return kThreadCount * ThreadGroupCount; } }
     //int HistoryLength { get { return _template.segments + 1; } }
 
     #endregion
@@ -85,11 +92,36 @@ public class Lines : MonoBehaviour
         {
             // Invoke the initialization kernel.
             var kernel = _computeShader.FindKernel("Init");
-            _computeShader.SetInt("_InstanceCount", InstanceCount);
-            _computeShader.SetInt("_MeshVertices", MeshVertices);
-            _computeShader.SetBuffer(kernel, "_LineDataBuffer", _lineDataBuffer);
+            _computeShader.SetInt("InstanceCount", _instanceCount);
+            _computeShader.SetInt("MeshVertices", MeshVertices);
+            _computeShader.SetFloat("lifeTime", _lifeTime);
+            _computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
+            _computeShader.SetBuffer(kernel, "PositionBuffer", _positionBuffer);
+            _computeShader.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);
+            _computeShader.SetBuffer(kernel, "TangentBuffer", _tangentBuffer);
+            _computeShader.SetBuffer(kernel, "NormalBuffer", _normalBuffer);
             _computeShader.Dispatch(kernel, ThreadGroupCount, 1, 1);
         }
+
+        var totalVertices = _instanceCount * MeshVertices;
+        var positionDataArr = new Vector4[totalVertices];
+        _positionBuffer.GetData(positionDataArr);
+
+        Debug.Log("----------");
+        for (int i = 0; i < totalVertices; i++)
+        {
+            //Debug.Log(particleDataArr[i].Active);
+            //Debug.Log(particleDataArr[i].BasePosition);
+            Debug.Log(positionDataArr[i]);
+            //Debug.Log(particleDataArr[i].Velocity);
+            //Debug.Log(particleDataArr[i].Normal);
+            //Debug.Log(particleDataArr[i].Tangent);
+            //Debug.Log(particleDataArr[i].Albedo);
+            //Debug.Log(particleDataArr[i].Length);
+            //Debug.Log(particleDataArr[i].Time);
+            //Debug.Log(particleDataArr[i].LifeTime);
+        }
+
     }
 
     #endregion
@@ -107,7 +139,11 @@ public class Lines : MonoBehaviour
     {
         // バッファ生成
         var totalVertices = _instanceCount * MeshVertices;
-        _lineDataBuffer = new ComputeBuffer(totalVertices, Marshal.SizeOf(typeof(LineData)));
+        _lineDataBuffer = new ComputeBuffer(_instanceCount, Marshal.SizeOf(typeof(LineData)));
+        _positionBuffer = new ComputeBuffer(totalVertices, 16);
+        _velocityBuffer = new ComputeBuffer(totalVertices, 16);
+        _tangentBuffer = new ComputeBuffer(totalVertices, 16);
+        _normalBuffer = new ComputeBuffer(totalVertices, 16);
         _GPUInstancingArgsBuffer = new ComputeBuffer(1, _GPUInstancingArgs.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
 
         ResetPositions();
@@ -124,7 +160,7 @@ public class Lines : MonoBehaviour
 
         // set indices
         var indices = new List<int>();
-        for (var i = 0; i < MeshVertices; i++)
+        for (var i = 0; i < MeshVertices - 1; i++)
         {
             indices.Add(i);
             indices.Add(i + 1);
@@ -134,6 +170,7 @@ public class Lines : MonoBehaviour
         _lineMesh.SetVertices(vertices);
         _lineMesh.SetIndices(indices.ToArray(), MeshTopology.Lines, 0);
         _lineMesh.UploadMeshData(true);
+        
     }
 
     void Update()
@@ -141,27 +178,47 @@ public class Lines : MonoBehaviour
         var totalVertices = _instanceCount * MeshVertices;
 
         // ComputeShader
-        int kernelId = _computeShader.FindKernel("Update");
-        _computeShader.SetFloat("_time", Time.time / 5.0f);
-        _computeShader.SetInt("_instanceCount", _instanceCount);
-        _computeShader.SetInt("_meshVertices", MeshVertices);
-        _computeShader.SetBuffer(kernelId, "_lineDataBuffer", _lineDataBuffer);
-        _computeShader.Dispatch(kernelId, ThreadGroupCount, 1, 1);
+        //int kernel = _computeShader.FindKernel("Update");
+        //_computeShader.SetFloat("_time", Time.time / 1.0f);
+        //_computeShader.SetInt("_instanceCount", _instanceCount);
+        //_computeShader.SetInt("_meshVertices", MeshVertices);
+        //_computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
+        //_computeShader.Dispatch(kernel, ThreadGroupCount, 1, 1);
 
-        var particleDataArr = new LineData[totalVertices];
-        _lineDataBuffer.GetData(particleDataArr);
+        //var particleDataArr = new LineData[totalVertices];
+        //_lineDataBuffer.GetData(particleDataArr);
+        
+        //Debug.Log("----------");
+        //for (int i=0; i< totalVertices; i++)
+        //{
+        //    Debug.Log(particleDataArr[i].Active);
+        //    Debug.Log(particleDataArr[i].BasePosition);
+        //    Debug.Log(particleDataArr[i].Position);
+        //    Debug.Log(particleDataArr[i].Velocity);
+        //    Debug.Log(particleDataArr[i].Normal);
+        //    Debug.Log(particleDataArr[i].Tangent);
+        //    Debug.Log(particleDataArr[i].Albedo);
+        //    Debug.Log(particleDataArr[i].Length);
+        //    Debug.Log(particleDataArr[i].Time);
+        //    Debug.Log(particleDataArr[i].LifeTime);
+        //}
 
-        // GPU Instaicing
-        _GPUInstancingArgs[0] = (_lineMesh != null) ? _lineMesh.GetIndexCount(0) : 0;
+
+    // GPU Instaicing
+    _GPUInstancingArgs[0] = (_lineMesh != null) ? _lineMesh.GetIndexCount(0) : 0;
         _GPUInstancingArgs[1] = (uint)_instanceCount;
         _GPUInstancingArgsBuffer.SetData(_GPUInstancingArgs);
-        _material.SetBuffer("_lineDataBuffer", _lineDataBuffer);
+        _material.SetBuffer("_LineDataBuffer", _lineDataBuffer);
+        _material.SetBuffer("_PositionBuffer", _positionBuffer);
+        _material.SetBuffer("_VelocityBuffer", _velocityBuffer);
+        _material.SetBuffer("_TangentBuffer", _tangentBuffer);
+        _material.SetBuffer("_NormalBuffer", _normalBuffer);
         //_material.SetVector("_MeshScale", _MeshScale);
-        _material.SetInt("_instanceCount", _instanceCount);
-        _material.SetInt("_meshVertices", MeshVertices);
+        _material.SetInt("_InstanceCount", _instanceCount);
+        _material.SetInt("_MeshVertices", MeshVertices);
         Graphics.DrawMeshInstancedIndirect(_lineMesh, 0, _material, new Bounds(_boundCenter, _boundSize), _GPUInstancingArgsBuffer);
     }
-
+    
     void OnDestroy()
     {
         if (_lineDataBuffer != null)
@@ -169,11 +226,32 @@ public class Lines : MonoBehaviour
             _lineDataBuffer.Release();
             _lineDataBuffer = null;
         }
+        if (_positionBuffer != null)
+        {
+            _positionBuffer.Release();
+            _positionBuffer = null;
+        }
+        if (_velocityBuffer != null)
+        {
+            _velocityBuffer.Release();
+            _velocityBuffer = null;
+        }
+        if (_tangentBuffer != null)
+        {
+            _tangentBuffer.Release();
+            _tangentBuffer = null;
+        }
+        if (_normalBuffer != null)
+        {
+            _normalBuffer.Release();
+            _normalBuffer = null;
+        }
         if (_GPUInstancingArgsBuffer != null)
         {
             _GPUInstancingArgsBuffer.Release();
             _GPUInstancingArgsBuffer = null;
         }
+        
     }
 
     #endregion // MonoBehaviour Method
