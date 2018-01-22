@@ -204,10 +204,11 @@ public class Lines : MonoBehaviour
         //}
 
 
-    // GPU Instaicing
-    _GPUInstancingArgs[0] = (_lineMesh != null) ? _lineMesh.GetIndexCount(0) : 0;
+        // GPU Instaicing
+        _GPUInstancingArgs[0] = (_lineMesh != null) ? _lineMesh.GetIndexCount(0) : 0;
         _GPUInstancingArgs[1] = (uint)_instanceCount;
         _GPUInstancingArgsBuffer.SetData(_GPUInstancingArgs);
+        //Debug.Log(_lineMesh.GetIndexCount(0));
         _material.SetBuffer("_LineDataBuffer", _lineDataBuffer);
         _material.SetBuffer("_PositionBuffer", _positionBuffer);
         _material.SetBuffer("_VelocityBuffer", _velocityBuffer);

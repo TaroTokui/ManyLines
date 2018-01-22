@@ -69,13 +69,17 @@
 			#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
 
 			//uint idx = unity_InstanceID + v.vertex.x * _InstanceCount;
-			uint idx = unity_InstanceID + _MeshVertices + v.vertex.x;
+			//uint idx = unity_InstanceID + _MeshVertices + v.vertex.x;
+			uint idx = unity_InstanceID * _MeshVertices + v.vertex.x;
 
 			//v.vertex = _LineDataBuffer[idx].Position;
 			//v.normal = _LineDataBuffer[idx].Normal;
 			//v.color = fixed4(_LineDataBuffer[idx].Albedo, 1);
 			
-			v.vertex = _PositionBuffer[idx];
+			float x = _PositionBuffer[idx].x;
+			float y = _PositionBuffer[idx].y;
+
+			v.vertex = float4(x, y, 0, 1);
 			v.normal = _NormalBuffer[idx];
 			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);
 

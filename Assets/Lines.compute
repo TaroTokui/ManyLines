@@ -42,9 +42,8 @@ float3 rotate_position(float3 position, float3 axis, float angle)
 [numthreads(kThreadCount, 1, 1)]
 void Init(uint id : SV_DispatchThreadID)
 {
-
 	LineDataBuffer[id].Active = false;
-	LineDataBuffer[id].Albedo = float3(1, 1, 1);
+	LineDataBuffer[id].Albedo = float3(0, 0, 1);
 	LineDataBuffer[id].Length = 0;
 	LineDataBuffer[id].Time = 0;
 	LineDataBuffer[id].LifeTime = 0;
@@ -52,7 +51,7 @@ void Init(uint id : SV_DispatchThreadID)
 	for (uint i = 0; i < MeshVertices; i++)
 	{
 		uint offs = id * MeshVertices + i;
-		PositionBuffer[offs] = float4(id, i, InstanceCount, MeshVertices);
+		PositionBuffer[offs] = float4(id, i, 0, 0);
 		VelocityBuffer[offs] = float4(0, 0, 0, 1);
 		TangentBuffer[offs] = float4(0, 1, 0, 1);
 		NormalBuffer[offs] = float4(1, 0, 0, 1);
