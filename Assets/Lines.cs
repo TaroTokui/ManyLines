@@ -8,7 +8,7 @@ public class Lines : MonoBehaviour
     // --------------------------------------------------
     #region // Defines
         
-    const int MeshVertices = 10;
+    const int MeshVertices = 100;
 
     struct LineData
     {
@@ -97,7 +97,7 @@ public class Lines : MonoBehaviour
             var kernel = _computeShader.FindKernel("Init");
             _computeShader.SetInt("InstanceCount", _instanceCount);
             _computeShader.SetInt("MeshVertices", MeshVertices);
-            _computeShader.SetFloat("lifeTime", _lifeTime);
+            _computeShader.SetFloat("LifeTime", _lifeTime);
             _computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
             _computeShader.SetBuffer(kernel, "PositionBuffer", _positionBuffer);
             _computeShader.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);
@@ -143,7 +143,7 @@ public class Lines : MonoBehaviour
             var kernel = _computeShader.FindKernel("Emit");
             _computeShader.SetInt("InstanceCount", _instanceCount);
             _computeShader.SetInt("MeshVertices", MeshVertices);
-            _computeShader.SetFloat("lifeTime", _lifeTime);
+            _computeShader.SetFloat("LifeTime", _lifeTime);
             _computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
             _computeShader.SetBuffer(kernel, "PositionBuffer", _positionBuffer);
             _computeShader.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);
@@ -208,7 +208,7 @@ public class Lines : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             EmitParticle();
-            Debug.Log("click");
+            //Debug.Log("click");
         }
 
         var totalVertices = _instanceCount * MeshVertices;
@@ -217,8 +217,8 @@ public class Lines : MonoBehaviour
         var kernel = _computeShader.FindKernel("Update");
         _computeShader.SetInt("InstanceCount", _instanceCount);
         _computeShader.SetInt("MeshVertices", MeshVertices);
-        _computeShader.SetFloat("time", Time.deltaTime / 1.0f);
-        _computeShader.SetFloat("lifeTime", _lifeTime);
+        _computeShader.SetFloat("DeltaTime", Time.deltaTime / 0.5f);
+        //_computeShader.SetFloat("LifeTime", _lifeTime);
         //_computeShader.SetVector("AirFlow", Vector4(_airFlow.x, _airFlow.y, _airFlow.z, 0));
         _computeShader.SetVector("AirFlow", _airFlow);
         _computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
@@ -267,7 +267,9 @@ public class Lines : MonoBehaviour
         _material.SetBuffer("_NormalBuffer", _normalBuffer);
         //_material.SetVector("_MeshScale", _MeshScale);
         _material.SetInt("_InstanceCount", _instanceCount);
+        //Debug.Log("instances: " + _instanceCount);
         _material.SetInt("_MeshVertices", MeshVertices);
+        //Debug.Log("MeshVertices: " + MeshVertices);
         Graphics.DrawMeshInstancedIndirect(_lineMesh, 0, _material, new Bounds(_boundCenter, _boundSize), _GPUInstancingArgsBuffer);
     }
     

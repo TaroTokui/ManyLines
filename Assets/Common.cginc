@@ -1,4 +1,4 @@
-// This file quotes the code of the following link.
+// This file based on the code of the following project.
 // https://github.com/keijiro/GDisintegrator
 
 #include "UnityCG.cginc"

@@ -70,27 +70,23 @@
 		{
 			#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
 
-			//uint idx = unity_InstanceID + v.vertex.x * _InstanceCount;
-			//uint idx = unity_InstanceID + _MeshVertices + v.vertex.x;
 			uint idx = unity_InstanceID * _MeshVertices + v.vertex.x;
 
-			//if (!_LineDataBuffer[unity_InstanceID].Active)
-			//{
-			//	return;
-			//}
+			float age = _LineDataBuffer[unity_InstanceID].Time / _LineDataBuffer[unity_InstanceID].LifeTime;
+			//float a1 = (float)_MeshVertices;
+			//float a2 = (float)v.vertex.x;
+			float posNorm = (float)v.vertex.x / (float)_MeshVertices;
+			float a = abs(age - posNorm)*10;
 
-			//v.vertex = _LineDataBuffer[idx].Position;
-			//v.normal = _LineDataBuffer[idx].Normal;
-			//v.color = fixed4(_LineDataBuffer[idx].Albedo, 1);
-			
+			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, max(0, 1 - a));
+
 			float x = _PositionBuffer[idx].x;
 			float y = _PositionBuffer[idx].y;
 
 			v.vertex = float4(x, y, 0, 1);
 			v.normal = _NormalBuffer[idx];
 
-			float a = _LineDataBuffer[unity_InstanceID].Active ? 1 : 0;
-			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, a);
+			//float a = _LineDataBuffer[unity_InstanceID].Active ? 1 : 0;
 
 			#endif
 		}
