@@ -80,7 +80,6 @@
 			float a = abs(age - posNorm)*10;
 
 			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, max(0, 1 - a));
-			//v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);	// 全て表示
 
 			// activeでないinstanceは表示しない
 			if (!_LineDataBuffer[unity_InstanceID].Active)
@@ -95,6 +94,8 @@
 			//v.vertex = float4(x, y, z, 1);
 			v.vertex = _PositionBuffer[idx];
 			v.normal = _NormalBuffer[idx];
+
+			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);	// 全て表示
 
 			#endif
 		}
