@@ -1,6 +1,6 @@
 ﻿#pragma kernel Init
 #pragma kernel Update
-//#pragma kernel Emit
+#pragma kernel Emit
 
 #include "Common.cginc"
 
@@ -72,18 +72,21 @@ void Update(uint id : SV_DispatchThreadID)
 	if(LineDataBuffer[id].Time > LineDataBuffer[id].LifeTime)
 	{
 		LineDataBuffer[id].Active = false;
-		return;
+		//return;
+	}
+	else {
+
+		for (uint i = 0; i < MeshVertices; i++)
+		{
+			uint offs = id * MeshVertices + i;
+			VelocityBuffer[offs] = AirFlow;
+			//TangentBuffer[offs] = float4(0, 1, 0, 1);
+			//NormalBuffer[offs] = float4(1, 0, 0, 1);
+			PositionBuffer[offs] += VelocityBuffer[offs];
+			//PositionBuffer[offs] += AirFlow;
+		}
 	}
 
-	for (uint i = 0; i < MeshVertices; i++)
-	{
-		uint offs = id * MeshVertices + i;
-		VelocityBuffer[offs] = AirFlow;
-		//TangentBuffer[offs] = float4(0, 1, 0, 1);
-		//NormalBuffer[offs] = float4(1, 0, 0, 1);
-		PositionBuffer[offs] += VelocityBuffer[offs];
-		//PositionBuffer[offs] += AirFlow;
-	}
 
 }
 

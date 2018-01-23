@@ -129,14 +129,28 @@ public class Lines : MonoBehaviour
 
     public void EmitParticle()
     {
-        var lineDataArr = new LineData[_instanceCount];
-        _lineDataBuffer.GetData(lineDataArr);
+        //var lineDataArr = new LineData[_instanceCount];
+        //_lineDataBuffer.GetData(lineDataArr);
 
-        //for (int i=0; i< _instanceCount; i++)
+        //for (int i = 0; i < _instanceCount; i++)
         //{
-        //    if(lineDataArr[i].Active)
+        //    if (lineDataArr[i].Active)
         //}
-        
+
+        if (_lineDataBuffer != null)
+        {
+            // Invoke the initialization kernel.
+            var kernel = _computeShader.FindKernel("Emit");
+            _computeShader.SetInt("InstanceCount", _instanceCount);
+            _computeShader.SetInt("MeshVertices", MeshVertices);
+            _computeShader.SetFloat("lifeTime", _lifeTime);
+            _computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
+            _computeShader.SetBuffer(kernel, "PositionBuffer", _positionBuffer);
+            _computeShader.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);
+            _computeShader.SetBuffer(kernel, "TangentBuffer", _tangentBuffer);
+            _computeShader.SetBuffer(kernel, "NormalBuffer", _normalBuffer);
+            _computeShader.Dispatch(kernel, ThreadGroupCount, 1, 1);
+        }
     }
 
     #endregion
@@ -193,6 +207,7 @@ public class Lines : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
+            EmitParticle();
             Debug.Log("click");
         }
 
@@ -202,7 +217,7 @@ public class Lines : MonoBehaviour
         var kernel = _computeShader.FindKernel("Update");
         _computeShader.SetInt("InstanceCount", _instanceCount);
         _computeShader.SetInt("MeshVertices", MeshVertices);
-        _computeShader.SetFloat("_time", Time.time / 1.0f);
+        _computeShader.SetFloat("time", Time.deltaTime / 1.0f);
         _computeShader.SetFloat("lifeTime", _lifeTime);
         //_computeShader.SetVector("AirFlow", Vector4(_airFlow.x, _airFlow.y, _airFlow.z, 0));
         _computeShader.SetVector("AirFlow", _airFlow);

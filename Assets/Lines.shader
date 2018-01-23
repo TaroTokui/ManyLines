@@ -8,11 +8,13 @@
 
 	SubShader
 	{
-		Tags{ "RenderType" = "Opaque" }
+		//Tags{ "RenderType" = "Opaque" }
+		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent" }
+		//Tags{ "RenderType" = "Transparent"}
 
 		CGPROGRAM
 
-		#pragma surface surf Standard vertex:vert addshadow nolightmap
+		#pragma surface surf Standard vertex:vert addshadow nolightmap alpha:fade
 		#pragma instancing_options procedural:setup
 		#pragma target 3.5
 
@@ -72,6 +74,11 @@
 			//uint idx = unity_InstanceID + _MeshVertices + v.vertex.x;
 			uint idx = unity_InstanceID * _MeshVertices + v.vertex.x;
 
+			//if (!_LineDataBuffer[unity_InstanceID].Active)
+			//{
+			//	return;
+			//}
+
 			//v.vertex = _LineDataBuffer[idx].Position;
 			//v.normal = _LineDataBuffer[idx].Normal;
 			//v.color = fixed4(_LineDataBuffer[idx].Albedo, 1);
@@ -97,6 +104,7 @@
 		void surf(Input IN, inout SurfaceOutputStandard o)
 		{
 			o.Albedo = IN.color.rgb * _Color.rgb;
+			o.Alpha = IN.color.a;// _Color.a;
 			o.Metallic = _Metallic;
 			o.Smoothness = _Smoothness;
 			o.Normal = float3(0, 0, IN.vface < 0 ? -1 : 1);
