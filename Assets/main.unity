@@ -205,8 +205,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04617eff2a748804f8b9c80042d7778e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _instanceCount: 1
+  _instanceCount: 5
   _lifeTime: 5
+  _airFlow: {x: 0, y: 0, z: 0}
   _computeShader: {fileID: 7200000, guid: eaccf487058a58948856d88440244abc, type: 3}
   _material: {fileID: 2100000, guid: 633622d58a61b044cba03e6c77020c28, type: 2}
   _boundCenter: {x: 0, y: 0, z: 0}

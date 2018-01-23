@@ -18,7 +18,7 @@
 
 		struct LineData
 		{
-			int Active;
+			bool Active;
 			//float4 BasePosition;
 			//float4 Position;
 			//float4 Velocity;
@@ -81,7 +81,9 @@
 
 			v.vertex = float4(x, y, 0, 1);
 			v.normal = _NormalBuffer[idx];
-			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);
+
+			float a = _LineDataBuffer[unity_InstanceID].Active ? 1 : 0;
+			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, a);
 
 			#endif
 		}

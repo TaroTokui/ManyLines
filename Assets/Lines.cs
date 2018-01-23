@@ -12,7 +12,7 @@ public class Lines : MonoBehaviour
 
     struct LineData
     {
-        public int Active;
+        public bool Active;
         //public Vector4 BasePosition;
         //public Vector4 Position;
         //public Vector4 Velocity;
@@ -34,6 +34,9 @@ public class Lines : MonoBehaviour
 
     [SerializeField]
     float _lifeTime = 5;
+
+    [SerializeField]
+    Vector3 _airFlow = new Vector3(0 , 0, 0);
 
     [SerializeField]
     ComputeShader _computeShader;
@@ -103,25 +106,37 @@ public class Lines : MonoBehaviour
             _computeShader.Dispatch(kernel, ThreadGroupCount, 1, 1);
         }
 
-        var totalVertices = _instanceCount * MeshVertices;
-        var positionDataArr = new Vector4[totalVertices];
-        _positionBuffer.GetData(positionDataArr);
+        //var totalVertices = _instanceCount * MeshVertices;
+        //var positionDataArr = new Vector4[totalVertices];
+        //_positionBuffer.GetData(positionDataArr);
 
-        Debug.Log("----------");
-        for (int i = 0; i < totalVertices; i++)
-        {
-            //Debug.Log(particleDataArr[i].Active);
-            //Debug.Log(particleDataArr[i].BasePosition);
-            Debug.Log(positionDataArr[i]);
-            //Debug.Log(particleDataArr[i].Velocity);
-            //Debug.Log(particleDataArr[i].Normal);
-            //Debug.Log(particleDataArr[i].Tangent);
-            //Debug.Log(particleDataArr[i].Albedo);
-            //Debug.Log(particleDataArr[i].Length);
-            //Debug.Log(particleDataArr[i].Time);
-            //Debug.Log(particleDataArr[i].LifeTime);
-        }
+        //Debug.Log("----------");
+        //for (int i = 0; i < totalVertices; i++)
+        //{
+        //    //Debug.Log(particleDataArr[i].Active);
+        //    //Debug.Log(particleDataArr[i].BasePosition);
+        //    Debug.Log(positionDataArr[i]);
+        //    //Debug.Log(particleDataArr[i].Velocity);
+        //    //Debug.Log(particleDataArr[i].Normal);
+        //    //Debug.Log(particleDataArr[i].Tangent);
+        //    //Debug.Log(particleDataArr[i].Albedo);
+        //    //Debug.Log(particleDataArr[i].Length);
+        //    //Debug.Log(particleDataArr[i].Time);
+        //    //Debug.Log(particleDataArr[i].LifeTime);
+        //}
 
+    }
+
+    public void EmitParticle()
+    {
+        var lineDataArr = new LineData[_instanceCount];
+        _lineDataBuffer.GetData(lineDataArr);
+
+        //for (int i=0; i< _instanceCount; i++)
+        //{
+        //    if(lineDataArr[i].Active)
+        //}
+        
     }
 
     #endregion
@@ -175,7 +190,28 @@ public class Lines : MonoBehaviour
 
     void Update()
     {
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Debug.Log("click");
+        }
+
         var totalVertices = _instanceCount * MeshVertices;
+
+        // Invoke the initialization kernel.
+        var kernel = _computeShader.FindKernel("Update");
+        _computeShader.SetInt("InstanceCount", _instanceCount);
+        _computeShader.SetInt("MeshVertices", MeshVertices);
+        _computeShader.SetFloat("_time", Time.time / 1.0f);
+        _computeShader.SetFloat("lifeTime", _lifeTime);
+        //_computeShader.SetVector("AirFlow", Vector4(_airFlow.x, _airFlow.y, _airFlow.z, 0));
+        _computeShader.SetVector("AirFlow", _airFlow);
+        _computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
+        _computeShader.SetBuffer(kernel, "PositionBuffer", _positionBuffer);
+        _computeShader.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);
+        _computeShader.SetBuffer(kernel, "TangentBuffer", _tangentBuffer);
+        _computeShader.SetBuffer(kernel, "NormalBuffer", _normalBuffer);
+        _computeShader.Dispatch(kernel, ThreadGroupCount, 1, 1);
 
         // ComputeShader
         //int kernel = _computeShader.FindKernel("Update");
@@ -187,7 +223,7 @@ public class Lines : MonoBehaviour
 
         //var particleDataArr = new LineData[totalVertices];
         //_lineDataBuffer.GetData(particleDataArr);
-        
+
         //Debug.Log("----------");
         //for (int i=0; i< totalVertices; i++)
         //{

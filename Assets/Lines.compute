@@ -9,7 +9,7 @@
 
 struct LineData
 {
-	int Active;
+	bool Active;
 	//float4 BasePosition;
 	//float4 Position;
 	//float4 Velocity;
@@ -31,6 +31,7 @@ uint InstanceCount;
 uint MeshVertices;
 float time;	// _Time is already defined at UnityUI.cginc?
 float lifeTime;
+float4 AirFlow;
 
 float3 rotate_position(float3 position, float3 axis, float angle)
 {
@@ -64,9 +65,32 @@ void Init(uint id : SV_DispatchThreadID)
 [numthreads(kThreadCount, 1, 1)]
 void Update(uint id : SV_DispatchThreadID)
 {
-	//// top vertex
-	//uint offs = id * InstanceCount;
-	//LineDataBuffer[offs].Active = true;
+	//LineDataBuffer[id].Albedo = float3(0, 0, 1);
+	//LineDataBuffer[id].Length = 0;
+	//LineDataBuffer[id].Time = 0;
+	LineDataBuffer[id].Time += time;
+	if(LineDataBuffer[id].Time > LineDataBuffer[id].LifeTime)
+	{
+		LineDataBuffer[id].Active = false;
+		return;
+	}
+
+	for (uint i = 0; i < MeshVertices; i++)
+	{
+		uint offs = id * MeshVertices + i;
+		VelocityBuffer[offs] = AirFlow;
+		//TangentBuffer[offs] = float4(0, 1, 0, 1);
+		//NormalBuffer[offs] = float4(1, 0, 0, 1);
+		PositionBuffer[offs] += VelocityBuffer[offs];
+		//PositionBuffer[offs] += AirFlow;
+	}
+
+}
+
+[numthreads(kThreadCount, 1, 1)]
+void Emit(uint id : SV_DispatchThreadID)
+{
+	LineDataBuffer[id].Active = true;
 	//LineDataBuffer[offs].BasePosition = float4(0, 0, 0, 1);
 	//LineDataBuffer[offs].Position = float4(0, 0, 0, 1);
 	//LineDataBuffer[offs].Velocity = float4(0, 0, 0, 1);
@@ -74,41 +98,6 @@ void Update(uint id : SV_DispatchThreadID)
 	//LineDataBuffer[offs].Tangent = float4(1, 0, 0, 1);
 	//LineDataBuffer[offs].Albedo = float3(1, 1, 1);
 	//LineDataBuffer[offs].Length = 0;
-	//LineDataBuffer[offs].Time += time;
-	//LineDataBuffer[offs].LifeTime = lifeTime;
-
-	// other vertecies
-	//for (uint i = 1; i < MeshVertices; i++)
-	//{
-	//	uint offs = id * InstanceCount + i;
-	//	LineDataBuffer[offs].Active = true;
-	//	LineDataBuffer[offs].BasePosition = float4(0, 0, 0, 1);
-	//	LineDataBuffer[offs].Position = float4(1, 2, 3, 1);
-	//	LineDataBuffer[offs].Velocity = float4(0, 0, 0, 1);
-	//	LineDataBuffer[offs].Normal = float4(0, 1, 0, 1);
-	//	LineDataBuffer[offs].Tangent = float4(1, 0, 0, 1);
-	//	LineDataBuffer[offs].Albedo = float3(1, 1, 1);
-	//	LineDataBuffer[offs].Length = 0;
-	//	LineDataBuffer[offs].Time += time;
-	//	LineDataBuffer[offs].LifeTime = lifeTime;
-	//}
+	LineDataBuffer[id].Time = 0;
+	LineDataBuffer[id].LifeTime = lifeTime;
 }
-
-//[numthreads(kThreadCount, 1, 1)]
-//void Emit(uint id : SV_DispatchThreadID)
-//{
-//	for (uint i = 0; i < MeshVertices; i++)
-//	{
-//		uint offs = id * InstanceCount + i;
-//		LineDataBuffer[offs].Active = true;
-//		LineDataBuffer[offs].BasePosition = float4(0, 0, 0, 1);
-//		LineDataBuffer[offs].Position = float4(0, 0, 0, 1);
-//		LineDataBuffer[offs].Velocity = float4(0, 0, 0, 1);
-//		LineDataBuffer[offs].Normal = float4(0, 1, 0, 1);
-//		LineDataBuffer[offs].Tangent = float4(1, 0, 0, 1);
-//		LineDataBuffer[offs].Albedo = float3(1, 1, 1);
-//		LineDataBuffer[offs].Length = 0;
-//		LineDataBuffer[offs].Time = 0;
-//		LineDataBuffer[offs].LifeTime = lifeTime;
-//	}
-//}
