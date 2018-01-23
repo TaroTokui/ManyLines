@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.InteropServices;
 
+//[ExecuteInEditMode]
+
 public class Lines : MonoBehaviour
 {
     // --------------------------------------------------
@@ -37,6 +39,9 @@ public class Lines : MonoBehaviour
 
     [SerializeField]
     Vector3 _airFlow = new Vector3(0 , 0, 0);
+
+    [SerializeField, Range(0,1)]
+    float _noiseSpread = 0.5f;
 
     [SerializeField]
     ComputeShader _computeShader;
@@ -222,6 +227,7 @@ public class Lines : MonoBehaviour
         //_computeShader.SetFloat("LifeTime", _lifeTime);
         //_computeShader.SetVector("AirFlow", Vector4(_airFlow.x, _airFlow.y, _airFlow.z, 0));
         _computeShader.SetVector("AirFlow", _airFlow);
+        _computeShader.SetFloat("NoiseSpread", _noiseSpread);
         _computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
         _computeShader.SetBuffer(kernel, "PositionBuffer", _positionBuffer);
         _computeShader.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);

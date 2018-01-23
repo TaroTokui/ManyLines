@@ -15,6 +15,7 @@
 		CGPROGRAM
 
 		#pragma surface surf Standard vertex:vert addshadow nolightmap alpha:fade
+		//#pragma surface surf Standard vertex:vert addshadow nolightmap
 		#pragma instancing_options procedural:setup
 		#pragma target 3.5
 
@@ -79,6 +80,13 @@
 			float a = abs(age - posNorm)*10;
 
 			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, max(0, 1 - a));
+			//v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);	// 全て表示
+
+			// activeでないinstanceは表示しない
+			if (!_LineDataBuffer[unity_InstanceID].Active)
+			{
+				v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 0);
+			}
 
 			//float x = _PositionBuffer[idx].x;
 			//float y = _PositionBuffer[idx].y;
@@ -87,8 +95,6 @@
 			//v.vertex = float4(x, y, z, 1);
 			v.vertex = _PositionBuffer[idx];
 			v.normal = _NormalBuffer[idx];
-
-			//float a = _LineDataBuffer[unity_InstanceID].Active ? 1 : 0;
 
 			#endif
 		}
