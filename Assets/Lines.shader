@@ -80,10 +80,12 @@
 
 			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, max(0, 1 - a));
 
-			float x = _PositionBuffer[idx].x;
-			float y = _PositionBuffer[idx].y;
+			//float x = _PositionBuffer[idx].x;
+			//float y = _PositionBuffer[idx].y;
+			//float z = _PositionBuffer[idx].z;
 
-			v.vertex = float4(x, y, 0, 1);
+			//v.vertex = float4(x, y, z, 1);
+			v.vertex = _PositionBuffer[idx];
 			v.normal = _NormalBuffer[idx];
 
 			//float a = _LineDataBuffer[unity_InstanceID].Active ? 1 : 0;

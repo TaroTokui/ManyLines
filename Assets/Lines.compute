@@ -32,6 +32,7 @@ uint MeshVertices;
 float DeltaTime;	// _Time is already defined at UnityUI.cginc?
 float LifeTime;
 float4 AirFlow;
+uint RandomSeed;
 
 float3 rotate_position(float3 position, float3 axis, float angle)
 {
@@ -53,7 +54,8 @@ void Init(uint id : SV_DispatchThreadID)
 	{
 		uint offs = id * MeshVertices + i;
 		//PositionBuffer[offs] = float4(id, i * 0.1, 0, 0);
-		PositionBuffer[offs] = float4(RandomVector01(id + (uint)(DeltaTime*1000)) + float3(0, i*0.1, 0), 0);
+		//PositionBuffer[offs] = float4(RandomVector01(id + RandomSeed) + float3(0, i*0.1, 0), 0);
+		PositionBuffer[offs] = float4(RandomVector01(id + RandomSeed), 1) + float4(0, i*0.1, 0, 0);
 		VelocityBuffer[offs] = float4(0,0,0,1);
 		TangentBuffer[offs] = float4(0, 1, 0, 1);
 		NormalBuffer[offs] = float4(1, 0, 0, 1);
@@ -104,4 +106,13 @@ void Emit(uint id : SV_DispatchThreadID)
 	//LineDataBuffer[offs].Length = 0;
 	LineDataBuffer[id].Time = 0;
 	LineDataBuffer[id].LifeTime = LifeTime;
+
+	for (uint i = 0; i < MeshVertices; i++)
+	{
+		uint offs = id * MeshVertices + i;
+		PositionBuffer[offs] = float4(RandomVector01(id + RandomSeed), 1) + float4(0, i*0.1, 0, 0);
+		VelocityBuffer[offs] = float4(0, 0, 0, 1);
+		TangentBuffer[offs] = float4(0, 1, 0, 1);
+		NormalBuffer[offs] = float4(1, 0, 0, 1);
+	}
 }

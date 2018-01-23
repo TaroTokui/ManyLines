@@ -144,6 +144,7 @@ public class Lines : MonoBehaviour
             _computeShader.SetInt("InstanceCount", _instanceCount);
             _computeShader.SetInt("MeshVertices", MeshVertices);
             _computeShader.SetFloat("LifeTime", _lifeTime);
+            _computeShader.SetInt("RandomSeed", (int)(Time.realtimeSinceStartup*100));
             _computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
             _computeShader.SetBuffer(kernel, "PositionBuffer", _positionBuffer);
             _computeShader.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);
