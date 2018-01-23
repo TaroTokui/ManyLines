@@ -93,31 +93,27 @@ void Update(uint id : SV_DispatchThreadID)
 		LineDataBuffer[id].Active = false;
 		return;
 	}
-	//else {
 
-	//}
+	uint offs = id * MeshVertices;
+	float3 p_prev = PositionBuffer[offs].xyz;
 
-	//uint offs = id * MeshVertices;
-	//float3 p_prev = PositionBuffer[offs].xyz;
+	for (uint i = 1; i < MeshVertices; i++)
+	{
+		uint index = offs + i;
+		//VelocityBuffer[offs] = AirFlow;
+		float3 v = NoiseField(id, p_prev);
+		//float3 v = NoiseField(id, normalize(p_prev));
+		//float3 p_update = p_prev + v * DeltaTime;
+		float3 p_update = p_prev + clamp(v, -2, 2) * DeltaTime * i / 100;
 
-	//for (uint i = 1; i < MeshVertices; i++)
-	//{
-	//	uint index = offs + i;
-	//	//VelocityBuffer[offs] = AirFlow;
-	//	float3 v = NoiseField(id, p_prev);
-	//	//float3 v = NoiseField(id, normalize(p_prev));
-	//	//float3 p_update = p_prev + v * DeltaTime;
-	//	float3 p_update = p_prev + clamp(v, -2, 2) * DeltaTime * i / 100;
+		p_prev = PositionBuffer[index].xyz;
 
-	//	p_prev = PositionBuffer[index].xyz;
-
-	//	//PositionBuffer[index] += VelocityBuffer[offs];
-	//	//PositionBuffer[index].xyz = p_update;
+		//PositionBuffer[index] += VelocityBuffer[offs];
+		PositionBuffer[index].xyz = lerp(p_update, p_prev, 0.5);
 
 
-	//	PositionBuffer[index].xyz += clamp(v, -2, 2) * DeltaTime;
 
-	//}
+	}
 
 	// 基準位置を決めて(base position?)
 	// そこを中心に動かす

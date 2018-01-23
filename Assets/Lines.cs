@@ -210,8 +210,7 @@ public class Lines : MonoBehaviour
 
     void Update()
     {
-
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
         {
             EmitParticle();
             //Debug.Log("click");

@@ -77,15 +77,26 @@
 			//float a1 = (float)_MeshVertices;
 			//float a2 = (float)v.vertex.x;
 			float posNorm = (float)v.vertex.x / (float)_MeshVertices;
-			float a = abs(age - posNorm)*10;
+			//float a = abs(age - posNorm)*10;
+			//float a = clamp(posNorm - max(0,age - 0.3), 0, 1)*10;
+			float a = clamp(posNorm - age + 0.3, 0, 1)*100;
 
-			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, max(0, 1 - a));
+			if( posNorm > age - 0.1 || age - 0.2 > posNorm)
+			{
+				a = 0;
+			}else
+			{
+				a = 1;
+			}
+
+			//v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, max(0, 1 - a));
+			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, a);
 
 			// activeでないinstanceは表示しない
-			if (!_LineDataBuffer[unity_InstanceID].Active)
-			{
-				v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 0);
-			}
+			//if (!_LineDataBuffer[unity_InstanceID].Active)
+			//{
+			//	v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 0);
+			//}
 
 			//float x = _PositionBuffer[idx].x;
 			//float y = _PositionBuffer[idx].y;
@@ -95,7 +106,7 @@
 			v.vertex = _PositionBuffer[idx];
 			v.normal = _NormalBuffer[idx];
 
-			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);	// 全て表示
+			//v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);	// 全て表示
 
 			#endif
 		}
