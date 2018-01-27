@@ -10,25 +10,19 @@
 	{
 		//Tags{ "RenderType" = "Opaque" }
 		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent" }
-		//Tags{ "RenderType" = "Transparent"}
 
 		CGPROGRAM
 
 		#pragma surface surf Standard vertex:vert addshadow nolightmap alpha:fade
-		//#pragma surface surf Standard vertex:vert addshadow nolightmap
 		#pragma instancing_options procedural:setup
 		#pragma target 3.5
 
 		struct LineData
 		{
 			bool Active;
-			//float4 BasePosition;
-			//float4 Position;
-			//float4 Velocity;
-			//float4 Normal;
-			//float4 Tangent;
 			float3 Albedo;
-			float Length;
+			float Radius;
+			float Phi;
 			float Time;
 			float LifeTime;
 		};
@@ -59,6 +53,7 @@
 		//float3 _MeshScale;
 		uint _InstanceCount;
 		uint _MeshVertices;
+		bool _ShowAllLines;
 
 		#if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
 		StructuredBuffer<LineData> _LineDataBuffer;
@@ -106,7 +101,10 @@
 			v.vertex = _PositionBuffer[idx];
 			v.normal = _NormalBuffer[idx];
 
-			//v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);	// 全て表示
+			if(_ShowAllLines)
+			{
+				v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);	// 全て表示
+			}
 
 			#endif
 		}

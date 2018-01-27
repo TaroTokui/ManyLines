@@ -14,7 +14,8 @@ public class GravityLines : MonoBehaviour {
     {
         public bool Active;
         public Vector3 Albedo;
-        public float Length;
+        public float Radius;
+        public float Phi;
         public float Time;
         public float LifeTime;
     }
@@ -28,13 +29,32 @@ public class GravityLines : MonoBehaviour {
     int _instanceCount = 100;
 
     [SerializeField]
+    int _emitCount = 5;
+
+    [SerializeField]
+    private int _activeCount = 0;
+
+    [SerializeField]
     float _lifeTime = 5;
 
     [SerializeField]
     Vector3 _airFlow = new Vector3(0, 0, 0);
 
+    //[SerializeField, Range(0,1)]
+    [SerializeField]
+    bool _ShowAllLines = false;
+
     [SerializeField, Range(0, 1)]
     float _noiseSpread = 0.5f;
+
+    [SerializeField, Range(0, 10)]
+    float _radius = 5;
+
+    [SerializeField, Range(0, 0.5f)]
+    float _lineLength = 0.1f;
+
+    [SerializeField, Range(-Mathf.PI, Mathf.PI)]
+    float _phi = 0;
 
     [SerializeField]
     ComputeShader _computeShader;
@@ -110,12 +130,20 @@ public class GravityLines : MonoBehaviour {
             _computeShader.SetInt("MeshVertices", MeshVertices);
             _computeShader.SetFloat("LifeTime", _lifeTime);
             _computeShader.SetInt("RandomSeed", (int)(Time.realtimeSinceStartup * 100));
+            _computeShader.SetFloat("Radius", _radius);
+            _computeShader.SetFloat("LineLength", _lineLength);
+            _computeShader.SetFloat("Phi", _phi);
+            _computeShader.SetInt("EmitIndex", _activeCount);
+            _computeShader.SetInt("EmitCount", _emitCount);
             _computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
             _computeShader.SetBuffer(kernel, "PositionBuffer", _positionBuffer);
             _computeShader.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);
             _computeShader.SetBuffer(kernel, "TangentBuffer", _tangentBuffer);
             _computeShader.SetBuffer(kernel, "NormalBuffer", _normalBuffer);
             _computeShader.Dispatch(kernel, ThreadGroupCount, 1, 1);
+
+            _activeCount += _emitCount;
+            if (_activeCount >= _instanceCount) _activeCount = 0;
         }
     }
 
@@ -170,10 +198,14 @@ public class GravityLines : MonoBehaviour {
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
+        //if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    EmitParticle();
+        //}
+
+        if (Input.GetMouseButton(0) || Input.GetKey(KeyCode.Space))
         {
             EmitParticle();
-            //Debug.Log("click");
         }
 
         var totalVertices = _instanceCount * MeshVertices;
@@ -185,6 +217,9 @@ public class GravityLines : MonoBehaviour {
         _computeShader.SetFloat("DeltaTime", Time.deltaTime / 0.5f);
         _computeShader.SetVector("AirFlow", _airFlow);
         _computeShader.SetFloat("NoiseSpread", _noiseSpread);
+        _computeShader.SetFloat("Radius", _radius);
+        _computeShader.SetFloat("LineLength", _lineLength);
+        _computeShader.SetFloat("Phi", _phi);
         _computeShader.SetBuffer(kernel, "LineDataBuffer", _lineDataBuffer);
         _computeShader.SetBuffer(kernel, "PositionBuffer", _positionBuffer);
         _computeShader.SetBuffer(kernel, "VelocityBuffer", _velocityBuffer);
@@ -195,7 +230,7 @@ public class GravityLines : MonoBehaviour {
         // GPU Instaicing
         _GPUInstancingArgs[0] = (_lineMesh != null) ? _lineMesh.GetIndexCount(0) : 0;
         _GPUInstancingArgs[1] = (uint)_instanceCount;
-        _GPUInstancingArgsBuffer.SetData(_GPUInstancingArgs);
+        _GPUInstancingArgsBuffer.SetData(_GPUInstancingArgs); 
         _material.SetBuffer("_LineDataBuffer", _lineDataBuffer);
         _material.SetBuffer("_PositionBuffer", _positionBuffer);
         _material.SetBuffer("_VelocityBuffer", _velocityBuffer);
@@ -203,6 +238,7 @@ public class GravityLines : MonoBehaviour {
         _material.SetBuffer("_NormalBuffer", _normalBuffer);
         _material.SetInt("_InstanceCount", _instanceCount);
         _material.SetInt("_MeshVertices", MeshVertices);
+        _material.SetInt("_ShowAllLines", _ShowAllLines ? 1 : 0);
         Graphics.DrawMeshInstancedIndirect(_lineMesh, 0, _material, new Bounds(_boundCenter, _boundSize), _GPUInstancingArgsBuffer);
     }
 

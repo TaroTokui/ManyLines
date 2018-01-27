@@ -3,6 +3,8 @@
 
 #include "UnityCG.cginc"
 
+static const float PI = 3.14159265359;
+
 // Hash function from H. Schechter & R. Bridson, goo.gl/RXiKaH
 uint Hash(uint s)
 {
