@@ -1,4 +1,5 @@
-﻿Shader "Custom/GravityLines" {
+﻿Shader "Unlit/Ribbon"
+{
 	Properties
 	{
 		_Color("Color", Color) = (1, 1, 1, 1)
@@ -10,11 +11,14 @@
 	{
 		//Tags{ "RenderType" = "Opaque" }
 		Tags{ "RenderType" = "Transparent" "Queue" = "Transparent" }
+		
+		Cull OFF
 
 		CGPROGRAM
 
-		//#pragma surface surf Standard vertex:vert addshadow nolightmap alpha:fade
-		#pragma surface surf Standard vertex:vert addshadow nolightmap
+		#pragma surface surf Standard vertex:vert addshadow nolightmap alpha:fade
+		//#pragma surface surf Standard vertex:vert addshadow nolightmap
+		//#pragma surface surf Standard vertex:vert addshadow
 		#pragma instancing_options procedural:setup
 		#pragma target 3.5
 
@@ -85,27 +89,16 @@
 				a = 1;
 			}
 
-			//v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, max(0, 1 - a));
 			v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, a);
+			//v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);
 
-			// activeでないinstanceは表示しない
-			//if (!_LineDataBuffer[unity_InstanceID].Active)
-			//{
-			//	v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 0);
-			//}
-
-			//float x = _PositionBuffer[idx].x;
-			//float y = _PositionBuffer[idx].y;
-			//float z = _PositionBuffer[idx].z;
-
-			//v.vertex = float4(x, y, z, 1);
 			v.vertex = _PositionBuffer[idx];
 			v.normal = _NormalBuffer[idx];
 
-			if(_ShowAllLines)
-			{
-				v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);	// 全て表示
-			}
+			//if(_ShowAllLines)
+			//{
+			//	v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);	// 全て表示
+			//}
 
 			#endif
 		}
@@ -123,6 +116,7 @@
 			o.Metallic = _Metallic;
 			o.Smoothness = _Smoothness;
 			o.Normal = float3(0, 0, IN.vface < 0 ? -1 : 1);
+			//o.Normal = float3(0, 0, IN.vface);
 		}
 
 		ENDCG

@@ -2,8 +2,8 @@
 #pragma kernel Update
 #pragma kernel Emit
 
-#include "Common.cginc"
-#include "SimplexNoise3D.cginc"
+#include "../Common.cginc"
+#include "../SimplexNoise3D.cginc"
 
 // スレッドグループのスレッドサイズ
 #define kThreadCount 256
@@ -11,11 +11,6 @@
 struct LineData
 {
 	bool Active;
-	//float4 BasePosition;
-	//float4 Position;
-	//float4 Velocity;
-	//float4 Normal;
-	//float4 Tangent;
 	float3 Albedo;
 	float Length;
 	float Time;
@@ -70,23 +65,17 @@ void Init(uint id : SV_DispatchThreadID)
 	for (uint i = 0; i < MeshVertices; i++)
 	{
 		uint offs = id * MeshVertices + i;
-		//PositionBuffer[offs] = float4(id, i * 0.1, 0, 0);
 		PositionBuffer[offs] = ResetPosition(id + RandomSeed, i*0.1);
 		VelocityBuffer[offs] = float4(0,0,0,1);
 		TangentBuffer[offs] = float4(0, 1, 0, 1);
 		NormalBuffer[offs] = float4(1, 0, 0, 1);
 	}
 
-	//LineDataBuffer[id].Position = float4(id, id, 2, 1);
-
 }
 
 [numthreads(kThreadCount, 1, 1)]
 void Update(uint id : SV_DispatchThreadID)
 {
-	//LineDataBuffer[id].Albedo = float3(0, 0, 1);
-	//LineDataBuffer[id].Length = 0;
-	//LineDataBuffer[id].Time = 0;
 	LineDataBuffer[id].Time += DeltaTime;
 	if(LineDataBuffer[id].Time > LineDataBuffer[id].LifeTime)
 	{
@@ -100,64 +89,33 @@ void Update(uint id : SV_DispatchThreadID)
 	for (uint i = 1; i < MeshVertices; i++)
 	{
 		uint index = offs + i;
-		//VelocityBuffer[offs] = AirFlow;
 		float3 v = NoiseField(id, p_prev);
-		//float3 v = NoiseField(id, normalize(p_prev));
-		//float3 p_update = p_prev + v * DeltaTime;
 		float3 p_update = p_prev + clamp(v, -2, 2) * DeltaTime * i / 100;
 
 		p_prev = PositionBuffer[index].xyz;
 
-		//PositionBuffer[index] += VelocityBuffer[offs];
 		PositionBuffer[index].xyz = lerp(p_update, p_prev, 0.5);
-
-
 
 	}
 
-	// 基準位置を決めて(base position?)
-	// そこを中心に動かす
 }
 
 [numthreads(kThreadCount, 1, 1)]
 void Emit(uint id : SV_DispatchThreadID)
 {
 	LineDataBuffer[id].Active = true;
-	//LineDataBuffer[offs].BasePosition = float4(0, 0, 0, 1);
-	//LineDataBuffer[offs].Position = float4(0, 0, 0, 1);
-	//LineDataBuffer[offs].Velocity = float4(0, 0, 0, 1);
-	//LineDataBuffer[offs].Normal = float4(0, 1, 0, 1);
-	//LineDataBuffer[offs].Tangent = float4(1, 0, 0, 1);
-	//LineDataBuffer[offs].Albedo = float3(1, 1, 1);
-	//LineDataBuffer[offs].Length = 0;
 	LineDataBuffer[id].Time = 0;
 	LineDataBuffer[id].LifeTime = LifeTime + RandomVector01(id+ RandomSeed).x;
 
 	uint offs = id * MeshVertices;
 	float3 p_prev = RandomVector01(id + DeltaTime);
 
-	//for (uint i = 0; i < MeshVertices; i++)
-	//{
-	//	uint offs = id * MeshVertices + i;
-	//	PositionBuffer[offs] = ResetPosition(id + RandomSeed, i*0.1);
-	//	//PositionBuffer[offs] = ResetPosition(id + RandomSeed, 0);
-	//	//PositionBuffer[offs] = float4(0, 0, 0, 1);
-	//	VelocityBuffer[offs] = float4(0, 0, 0, 1);
-	//	TangentBuffer[offs] = float4(0, 1, 0, 1);
-	//	NormalBuffer[offs] = float4(1, 0, 0, 1);
-	//}
-
-
 	for (uint i = 1; i < MeshVertices; i++)
 	{
 		uint index = offs + i;
-		//VelocityBuffer[offs] = AirFlow;
 		float3 v = NoiseField(id, p_prev);
-		//float3 v = NoiseField(id, normalize(p_prev));
 		float3 p_update = p_prev + v * DeltaTime;
-		//float3 p_update = p_prev + clamp(v, -2, 2) * DeltaTime;
 
-		//PositionBuffer[index] += VelocityBuffer[offs];
 		PositionBuffer[index].xyz = p_update;
 
 		p_prev = PositionBuffer[index].xyz;

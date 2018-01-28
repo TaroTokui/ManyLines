@@ -36,6 +36,7 @@ float LineLength;
 float Phi;
 uint EmitIndex;
 uint EmitCount;
+float MeshWidth;
 
 float3 rotate_position(float3 position, float3 axis, float angle)
 {
@@ -93,18 +94,36 @@ void Update(uint id : SV_DispatchThreadID)
 	float theta = id.x / (float)InstanceCount * 2 * PI + LineDataBuffer[id].Phi;
 	float span = LineLength;
 	float radius = LineDataBuffer[id].Radius;
+	
+	float age = LineDataBuffer[id].Time / LineDataBuffer[id].LifeTime;
 
-	for (uint i = 0; i < MeshVertices; i++)
+
+	int MeshVertices2 = MeshVertices / 2;
+	for (uint i = 0; i < MeshVertices2; i++)
 	{
-		uint index = offs + i;
-		float param = i / (float)MeshVertices + 0.2;
+		uint index1 = offs + i*2;
+		uint index2 = offs + i*2+1;
+
+		// center position
+		float param = i / (float)MeshVertices2 + age + 0.2;
 		float r = radius * param;
 		float phi = Phi * param * 2 * PI;
 		float angle = theta * (phi>0 ? 1 : -1) + phi;	// 位相差が負の時は回転方向を逆にする
 		float3 pos = float3(r*cos(angle), i*span, r*sin(angle));
 
-		PositionBuffer[index].xyz = pos;
+		// side position
+		float3 normP = normalize(pos);
+		float3 tangent = cross(normP, float3(0,1,0));	// y軸から見た時の回転方向
+		float3 normal = cross(normP, tangent);	// 法線方向
 
+		PositionBuffer[index1].xyz = pos + normP * MeshWidth;
+		PositionBuffer[index2].xyz = pos - normP * MeshWidth;
+		
+		TangentBuffer[index1].xyz = tangent;
+		TangentBuffer[index2].xyz = tangent;
+
+		NormalBuffer[index1].xyz = -normal;
+		NormalBuffer[index2].xyz = -normal;
 	}
 
 }
