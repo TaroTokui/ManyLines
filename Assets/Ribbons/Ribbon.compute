@@ -100,8 +100,10 @@ void Update(uint id : SV_DispatchThreadID)
 	//float level = pow(0.5 - age, 2) * 4;
 	float level = max(0, 1.0f - age - 0.05f) * age;
 
+	float3 lastPos = float3(0, 0, 0);
+
 	int MeshVertices2 = MeshVertices / 2;
-	for (uint i = 0; i < MeshVertices2; i++)
+	for (uint i = 0; i < MeshVertices2 * age; i++)
 	{
 		uint index1 = offs + i*2;
 		uint index2 = offs + i*2+1;
@@ -127,6 +129,18 @@ void Update(uint id : SV_DispatchThreadID)
 
 		NormalBuffer[index1].xyz = -normal;
 		NormalBuffer[index2].xyz = -normal;
+
+		lastPos = pos;
+	}
+
+	// 表示しない、最後の頂点に重ねる
+	for (uint i = MeshVertices2 * age; i < MeshVertices2; i++)
+	{
+		uint index1 = offs + i * 2;
+		uint index2 = offs + i * 2 + 1;
+
+		PositionBuffer[index1].xyz = lastPos;
+		PositionBuffer[index2].xyz = lastPos;
 	}
 
 }
