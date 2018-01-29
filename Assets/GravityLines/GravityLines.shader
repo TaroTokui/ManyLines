@@ -13,8 +13,8 @@
 
 		CGPROGRAM
 
-		//#pragma surface surf Standard vertex:vert addshadow nolightmap alpha:fade
-		#pragma surface surf Standard vertex:vert addshadow nolightmap
+		#pragma surface surf Standard vertex:vert addshadow nolightmap alpha:fade
+		//#pragma surface surf Standard vertex:vert addshadow nolightmap
 		#pragma instancing_options procedural:setup
 		#pragma target 3.5
 

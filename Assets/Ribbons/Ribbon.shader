@@ -99,6 +99,12 @@
 			//	v.color = fixed4(_LineDataBuffer[unity_InstanceID].Albedo, 1);	// 全て表示
 			//}
 
+			// 寿命が尽きたら消す
+			if (age >= 1.0f)
+			{
+				v.vertex = float4(0, 0, 0, 1);
+			}
+
 			#endif
 		}
 

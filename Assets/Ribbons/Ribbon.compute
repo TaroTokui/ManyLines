@@ -95,8 +95,10 @@ void Update(uint id : SV_DispatchThreadID)
 	float span = LineLength;
 	float radius = LineDataBuffer[id].Radius;
 	
-	float age = LineDataBuffer[id].Time / LineDataBuffer[id].LifeTime;
-
+	float age = min(1.0f, LineDataBuffer[id].Time / LineDataBuffer[id].LifeTime);
+	//float level = max(0, 1.0f - age - 0.05f);
+	//float level = pow(0.5 - age, 2) * 4;
+	float level = max(0, 1.0f - age - 0.05f) * age;
 
 	int MeshVertices2 = MeshVertices / 2;
 	for (uint i = 0; i < MeshVertices2; i++)
@@ -116,8 +118,9 @@ void Update(uint id : SV_DispatchThreadID)
 		float3 tangent = cross(normP, float3(0,1,0));	// y軸から見た時の回転方向
 		float3 normal = cross(normP, tangent);	// 法線方向
 
-		PositionBuffer[index1].xyz = pos + normP * MeshWidth;
-		PositionBuffer[index2].xyz = pos - normP * MeshWidth;
+		// だんだん細くする
+		PositionBuffer[index1].xyz = pos + normP * MeshWidth * level;
+		PositionBuffer[index2].xyz = pos - normP * MeshWidth * level;
 		
 		TangentBuffer[index1].xyz = tangent;
 		TangentBuffer[index2].xyz = tangent;
